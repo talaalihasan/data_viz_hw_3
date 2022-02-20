@@ -58,7 +58,9 @@
         <h1 class="headline">
             No. 1: Playoff Wins
         </h1>
-
+        <h2 class = "subheader">
+            By Year
+        </h2>
         <svg width="1050px" height="1000px">
 
         </svg>
@@ -92,13 +94,16 @@
     //objects
     //functions
 
-//     var data = d3.json("https://static01.nyt.com/newsgraphics/2022/01/29/brady-career/216fe5204c6d41cf312f933f886cc16d35e148e9/player-lookup.json");
 
-// console.log(data)
+// d3.tsv("cumulative-stats.csv").then(function (data) { 
 
-d3.json("player-lookup.json") .then(function (data) {
 
-console.log(data)
+// d3.json("player-lookup.json").then(function (data2){ 
+
+
+
+    d3.tsv("cumulative-stats.tsv").then(function (data) {
+        // d3.json("player-lookup.json").then(function (data2) {
 
         //when temp is loaded, then pass data into this block
         //all references to the data need to be in this block
@@ -107,11 +112,15 @@ console.log(data)
         //https://github.com/d3/d3-fetch
 
 
-        // data.forEach(function (row) {
-        //     row.year = new Date( row.year + "T00:00")
-        //     row.playoff_wins = +row.playoff_wins 
-        // })
+        data.forEach(function (row) {
+            row.year = new Date( row.year + "T00:00")
+            row.playoff_wins = +row.playoff_wins 
+        })
 
+        
+
+        console.log(data)
+        // console.log(data2)
 
 
         let margin = { top: 30, right: 10, bottom: 10, left: 30 };
@@ -120,12 +129,12 @@ console.log(data)
         //domain takes the data we have and maps them into SVG space
         //in this case we need to use scaleTime because we're dealin time data
         let x = d3.scaleTime()
-            .domain(d3.extent(data.map(function (d) { return d.age }))) //d3 extent
+            .domain(d3.extent(data.map(function (d) { return d.year }))) //d3 extent
             .range([margin.left, width - margin.right])
 
         //in this case we need to use scaleLinear because we're dealin linear data
         let y = d3.scaleLinear()
-            .domain(d3.extent(data.map(function (d) { return d.player_id })))
+            .domain(d3.extent(data.map(function (d) { return d.playoff_wins })))
             .range([height - margin.bottom, margin.top])
 
 
@@ -133,7 +142,8 @@ console.log(data)
         //https://github.com/d3/d3-axis
         // https://github.com/d3/d3-time-format
         //https://github.com/d3/d3-format
-        let yAxisSettings = d3.axisLeft(y) //set axis to the left
+
+        let yAxisSettings = d3.axisRight(y) //set axis to the left
             .ticks(5) //approx how many ticks, the function will not necesarily give you that number
             .tickSize(-width) //size of tick lines
             // .tickFormat(d3.format("+.0")) //what format do you want https://github.com/d3/d3-format 
@@ -163,12 +173,12 @@ console.log(data)
         let yAxisTicks = svg.append("g")
             .attr("class", "y axis")
             .call(yAxisSettings)
-            .attr("transform", `translate(${margin.left},0)`)
+            .attr("transform", 'translate(' + (825) +',0)')
 
         let line = d3.line() //define a line function
-            .defined(d => !isNaN(d.player_id))
-            .x(function (d) { return x(d.age) }) //accessing date 
-            .y(function (d) { return y(d.player_id) }) //accesssing value 
+            .defined(d => !isNaN(d.playoff_wins))
+            .x(function (d) { return x(d.year) }) //accessing date 
+            .y(function (d) { return y(d.playoff_wins) }) //accesssing value 
 
 
         
@@ -216,6 +226,34 @@ console.log(data)
         .style("stroke", "black")
         .style("stroke-width", "2px")
 
-})    
+
+        let labels = svg.append("g")
+        .selectAll("text")
+        .data(grouped_data)
+        .join("text")
+        .attr("x", d => x(d[1][d[1].length -1].year))
+        .attr("y", d => y(d[1][d[1].length -1].playoff_wins))
+        .attr("dx", -70)
+        .attr("dy", 1)
+        .text(d => d[0])
+        .style("fill", d => {
+            if (d[0] == "BradTo00" || d[0]=="BradTe00" || d[0]=="StarBa00" || d[0] == "TarkFr00" || d[0] == "MontJo01" || d[0]=="ElwaJo00") {
+                return "black"
+            } else {
+                return "none"
+            }
+        })
+
+        // dataNest.forEach(function(d){
+        // //iterate over all the data for line to get the last point of a line.
+        // var k = d.values
+        // var last = k[k.length -1];//get the last value of the line
+        // svg.append("circle")
+        // .attr("cx", function(d){return x(last.year);})//make a circle at the last point
+        // .attr("cy", function(d){return y(last.playoff_wins);})
+        // .attr("r", 4);
+        // })
+    // })
+    })
 
 </script>
